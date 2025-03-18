@@ -1,0 +1,11 @@
+fastapi
+pydantic
+uvicorn
+python-multipart
+pymupdf
+docling
+mistralai
+pinecone-client
+chromadb
+numpy
+scikit-learn
