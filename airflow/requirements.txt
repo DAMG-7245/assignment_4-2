@@ -1,0 +1,10 @@
+apache-airflow
+pymupdf
+docling
+mistralai
+pinecone-client
+chromadb
+numpy
+scikit-learn
+requests
+boto3
