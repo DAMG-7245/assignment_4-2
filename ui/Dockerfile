@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY ui/ .
-COPY common/ ./common/
+COPY common/ ././common/
 
 # Expose Streamlit port
 EXPOSE 8501

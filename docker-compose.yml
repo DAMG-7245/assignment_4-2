@@ -88,7 +88,10 @@ services:
 
   # FastAPI Service
   fastapi:
-    build: ./api
+#    build: ./api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     restart: always
     volumes:
       - ./data:/app/data

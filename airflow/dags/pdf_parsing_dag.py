@@ -5,9 +5,10 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 from airflow.models import Variable
+import pdfplumber
 
 # Import parsing strategies
-from docling import PDFExtractor  # Assuming Docling has this interface
+#from docling import PDFExtractor  # Assuming Docling has this interface
 from mistralai.ocr import MistralOCR  # Assuming Mistral OCR client
 import pypdf  # Basic PDF extraction from Assignment 1
 
@@ -20,8 +21,8 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-RAW_DATA_DIR = "/opt/airflow/data/raw"
-PROCESSED_DATA_DIR = "/opt/airflow/data/processed"
+RAW_DATA_DIR = "/airflow/data/raw"
+PROCESSED_DATA_DIR = "/airflow/data/processed"
 
 # Strategy 1: Basic PyPDF extraction (from Assignment 1)
 def parse_with_pypdf(pdf_path, **kwargs):
@@ -68,8 +69,9 @@ def parse_with_pypdf(pdf_path, **kwargs):
         raise
 
 # Strategy 2: Docling parsing
+"""
 def parse_with_docling(pdf_path, **kwargs):
-    """Parse PDF using Docling library"""
+    '''Parse PDF using Docling library'''
     output_dir = os.path.join(PROCESSED_DATA_DIR, "docling")
     os.makedirs(output_dir, exist_ok=True)
     
@@ -109,7 +111,46 @@ def parse_with_docling(pdf_path, **kwargs):
     except Exception as e:
         print(f"Error parsing {pdf_path} with Docling: {e}")
         raise
+"""
+def parse_with_docling(pdf_path, **kwargs):
+    """Parse PDF using pdfplumber (as Docling strategy replacement)"""
+    output_dir = os.path.join(PROCESSED_DATA_DIR, "docling")  # 沿用原本 docling 資料夾
+    os.makedirs(output_dir, exist_ok=True)
+    
+    filename = os.path.basename(pdf_path)
+    output_path = os.path.join(output_dir, filename.replace('.pdf', '.json'))
 
+    try:
+        # Extract year and quarter from filename
+        year_quarter = filename.replace('nvidia_', '').replace('.pdf', '')
+
+        pdf_content = []
+        with pdfplumber.open(pdf_path) as pdf:
+            for page_num, page in enumerate(pdf.pages):
+                page_text = page.extract_text()
+                tables = [table.extract() for table in page.extract_tables()]
+                
+                pdf_content.append({
+                    'page': page_num + 1,
+                    'text': page_text,
+                    'tables': tables
+                })
+
+        result = {
+            'source': pdf_path,
+            'year_quarter': year_quarter,
+            'parser': 'pdfplumber',
+            'content': pdf_content
+        }
+
+        with open(output_path, 'w') as f:
+            json.dump(result, f, indent=2)
+
+        return output_path
+
+    except Exception as e:
+        print(f"Error parsing {pdf_path} with pdfplumber: {e}")
+        raise
 # Strategy 3: Mistral OCR
 def parse_with_mistral_ocr(pdf_path, **kwargs):
     """Parse PDF using Mistral OCR"""
