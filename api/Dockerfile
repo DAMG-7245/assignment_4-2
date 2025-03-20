@@ -9,12 +9,17 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY api/requirements.txt .
+#COPY api/requirements.txt .
+COPY ./api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY api/ .
-COPY common/ ./common/
+#COPY api/ .
+COPY ./api/ ./
+COPY ./common/ ./common/ 
+#COPY common/ ./common/
+#COPY ../common/ ./common/
+
 
 # Expose API port
 EXPOSE 8000

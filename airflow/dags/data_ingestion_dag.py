@@ -2,8 +2,9 @@ from datetime import datetime, timedelta
 import os
 import requests
 from airflow import DAG
+from airflow.decorators import task
 from airflow.operators.python import PythonOperator
-from airflow.models import Variable
+from airflow.operators.empty import EmptyOperator
 
 default_args = {
     'owner': 'airflow',
@@ -14,79 +15,53 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-NVIDIA_REPORTS_BASE_URL = "https://investor.nvidia.com/financial-info/quarterly-reports/default.aspx"
-DATA_DIR = "/opt/airflow/data/raw"
+DATA_DIR = "/airflow/data/raw"
 QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4']
 
-# This would need to be improved with actual web scraping logic to get the real PDFs
-def get_nvidia_quarterly_report_urls():
-    # This is a placeholder. In a real implementation, 
-    # you would scrape the NVIDIA investor relations page
-    # to get the actual PDF URLs for the past 5 years
+@task
+def get_nvidia_pdf_urls():
     urls = []
     current_year = datetime.now().year
-    
-    # Get reports for the past 5 years
     for year in range(current_year - 5, current_year):
         for quarter in QUARTERS:
-            # This is a placeholder URL pattern - would need to be replaced with real URLs
             url = f"https://investor.nvidia.com/financials/{year}/{quarter}/NVIDIA-{year}-{quarter}-Report.pdf"
-            urls.append((url, f"{year}_{quarter}"))
-    
+            urls.append({"url": url, "filename": f"nvidia_{year}_{quarter}.pdf"})
     return urls
 
-def download_pdf(url, filename, **kwargs):
-    """Download a PDF from a URL and save it to the data directory"""
+@task
+def download_pdf(obj):
+    url = obj["url"]
+    filename = obj["filename"]
     os.makedirs(DATA_DIR, exist_ok=True)
     output_path = os.path.join(DATA_DIR, filename)
-    
-    # Skip if file already exists
+
     if os.path.exists(output_path):
-        print(f"File {output_path} already exists. Skipping download.")
+        print(f"{output_path} already exists. Skipping.")
         return output_path
-        
+
     try:
-        # In a real implementation, you'd handle authentication, redirects, etc.
         response = requests.get(url, timeout=30)
         response.raise_for_status()
-        
-        with open(output_path, 'wb') as f:
+        with open(output_path, "wb") as f:
             f.write(response.content)
-        
-        print(f"Downloaded {url} to {output_path}")
         return output_path
     except Exception as e:
         print(f"Error downloading {url}: {e}")
         raise
 
 with DAG(
-    'nvidia_quarterly_reports_ingestion',
+    dag_id='nvidia_quarterly_reports_ingestion',
     default_args=default_args,
-    description='Download NVIDIA quarterly reports for the past 5 years',
-    schedule_interval=timedelta(days=7),
+    description='Download NVIDIA quarterly reports using dynamic task mapping',
+    schedule=timedelta(days=7),  # ✅ updated from `schedule_interval` → `schedule`
     start_date=datetime(2025, 3, 1),
     catchup=False,
     tags=['nvidia', 'rag'],
 ) as dag:
     
-    # Task to get the list of PDF URLs to download
-    get_urls_task = PythonOperator(
-        task_id='get_pdf_urls',
-        python_callable=get_nvidia_quarterly_report_urls,
-    )
-    
-    # Dynamically create download tasks based on the URLs returned
-    def create_download_tasks(urls_with_names):
-        download_tasks = []
-        for url, name in urls_with_names:
-            task = PythonOperator(
-                task_id=f'download_{name}',
-                python_callable=download_pdf,
-                op_kwargs={'url': url, 'filename': f'nvidia_{name}.pdf'},
-            )
-            download_tasks.append(task)
-        return download_tasks
-    
-    # Task dependencies
-    download_tasks = create_download_tasks(get_urls_task.output)
-    get_urls_task >> download_tasks
+    start = EmptyOperator(task_id="start")
+
+    urls = get_nvidia_pdf_urls()
+    download_tasks = download_pdf.expand(obj=urls)
+
+    start >> urls >> download_tasks
