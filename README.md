@@ -1,3 +1,8 @@
+Access the services:
+   - Airflow: http://localhost:8080 (username: airflow, password: airflow)
+   - Streamlit UI: https://streamlit-frontend-service-1077531201115.us-east1.run.app
+   - FastAPI: https://python-backend-service-1077531201115.us-east1.run.app
+   - 
 # RAG Pipeline with Airflow for NVIDIA Quarterly Reports
 
 A Retrieval-Augmented Generation (RAG) pipeline for processing and querying NVIDIA quarterly reports using Apache Airflow for orchestration.
@@ -87,10 +92,7 @@ cd rag-pipeline
 docker-compose up -d
 ```
 
-3. Access the services:
-   - Airflow: http://localhost:8080 (username: admin, password: admin)
-   - Streamlit UI: https://streamlit-frontend-service-1077531201115.us-east1.run.app
-   - FastAPI: https://python-backend-service-1077531201115.us-east1.run.app
+
 
 ## Usage
 
