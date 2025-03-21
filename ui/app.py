@@ -1,5 +1,3 @@
-# rag-pipeline/ui/app.py
-
 import streamlit as st
 from components import (
     s3_pdf_selector,
@@ -9,38 +7,37 @@ from components import (
     rag_query_and_answer
 )
 
-# 你后端的 Base URL (Docker Compose 或本地)
-BASE_URL = "http://localhost:8000/api"
+# Backend Base URL, adjust according to your deployment environment
+BASE_URL = "https://python-backend-service-1077531201115.us-east1.run.app/api"
 
 def main():
-    st.title("RAG Pipeline 前端 Demo")
+    st.title("RAG Pipeline Frontend Demo")
 
-    # 1) 选择 S3中的 PDF
-    st.header("1. 选择 PDF")
-    selected_pdf = s3_pdf_selector(BASE_URL)
-    st.write(f"当前选定: {selected_pdf if selected_pdf else '无'}")
+    # 1) Select year-quarter (from PDF mappings fetched from S3)
+    st.header("1. Select Year-Quarter")
+    selected_quarter = s3_pdf_selector(BASE_URL)
+    st.write(f"Currently selected: {selected_quarter if selected_quarter else 'None'}")
 
-    # 2) 选择解析器
-    st.header("2. 选择解析器")
+    # 2) Select parser
+    st.header("2. Select Parser")
     parser_type = parser_selector()
 
-    # 3) 选择 Chunking 策略
-    st.header("3. 选择 Chunking 策略")
+    # 3) Select Chunking Strategy
+    st.header("3. Select Chunking Strategy")
     chunk_strategy = chunking_selector()
 
-    # 4) 执行 解析并切分
-    st.header("4. 解析并切分 PDF")
-    parse_and_chunk_button(BASE_URL, selected_pdf, parser_type, chunk_strategy)
+    # 4) Execute parsing and chunking
+    st.header("4. Parse and Chunk PDF")
+    parse_and_chunk_button(BASE_URL, selected_quarter, parser_type, chunk_strategy)
 
-    # 5) 查询 + RAG + Gemini
-    st.header("5. 查询 & RAG检索 & (可选) Gemini回答")
+    # 5) Query & RAG Retrieval & (Optional) Gemini Answer
+    st.header("5. Query & RAG Retrieval & (Optional) Gemini Answer")
     rag_query_and_answer(BASE_URL)
 
 if __name__ == "__main__":
-    # 初始化 session_state
+    # Initialize session state if not already present
     if "chunks" not in st.session_state:
         st.session_state["chunks"] = []
     if "chunks_count" not in st.session_state:
         st.session_state["chunks_count"] = 0
-
     main()

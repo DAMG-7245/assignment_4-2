@@ -1,4 +1,3 @@
-# rag-pipeline/api/main.py
 from fastapi import FastAPI
 from routes.routes import router  
 
