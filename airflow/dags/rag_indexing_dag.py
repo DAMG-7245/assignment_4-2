@@ -1,4 +1,4 @@
- from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 import os
 import json
 import numpy as np
@@ -20,10 +20,10 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-PROCESSED_DATA_DIR = "/opt/airflow/data/processed"
-EMBEDDINGS_DIR = "/opt/airflow/data/embeddings"
-INDEX_DIR = "/opt/airflow/data/indexes"
-CHUNK_DIR = "/opt/airflow/data/chunks"
+PROCESSED_DATA_DIR = "/airflow/data/processed"
+EMBEDDINGS_DIR = "/airflow/data/embeddings"
+INDEX_DIR = "/airflow/data/indexes"
+CHUNK_DIR = "/airflow/data/chunks"
 
 # Initialize the sentence transformer model for embeddings
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -353,7 +353,7 @@ with DAG(
     'rag_indexing',
     default_args=default_args,
     description='Process parsed PDFs for RAG indexing',
-    schedule_interval=timedelta(days=7),
+    schedule=timedelta(days=7),
     start_date=datetime(2025, 3, 1),
     catchup=False,
     tags=['nvidia', 'rag', 'indexing'],
