@@ -2,7 +2,7 @@ apache-airflow
 pymupdf
 docling
 mistralai
-pinecone-client
+pinecone
 chromadb
 numpy
 scikit-learn
