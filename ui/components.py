@@ -3,60 +3,62 @@ import requests
 
 def s3_pdf_selector(base_url: str) -> str:
     """
-    组件1: 从后端获取S3中的PDF列表, 让用户在前端选择一个PDF key.
-    :param base_url: 后端API地址 (如 http://localhost:8000/api)
-    :return: 用户所选的pdf_key (str)
+    Component 1: Retrieve a mapping of PDFs from S3 ({YearQuarter: PDF URL})
+    from a backend, and allow the user to select a year-quarter (e.g., "2024Q1").
+    :param base_url: Backend API URL (e.g., http://localhost:8000/api)
+    :return: The user-selected year-quarter (str)
     """
-    pdf_keys = []
-    with st.spinner("加载 PDF 列表..."):
+    mapping = {}
+    with st.spinner("Loading PDF mappings..."):
         try:
             resp = requests.get(f"{base_url}/list-pdfs")
             resp.raise_for_status()
-            pdf_keys = resp.json().get("pdf_keys", [])
+            mapping = resp.json().get("mapping", {})
         except Exception as e:
-            st.error(f"获取PDF列表失败: {e}")
+            st.error(f"Failed to fetch PDF mappings: {e}")
 
-    if not pdf_keys:
-        st.warning("S3中没有找到任何PDF文件。请检查或等待Airflow爬取。")
+    if not mapping:
+        st.warning("No PDF mappings found in S3, please check or wait for Airflow to crawl.")
         return ""
 
-    selected_pdf = st.selectbox("选择一个 S3 PDF Key:", pdf_keys)
-    return selected_pdf
-
+    # User selects a key (year-quarter) from the mapping
+    selected_quarter = st.selectbox("Select a year-quarter:", list(mapping.keys()))
+    return selected_quarter
 
 def parser_selector() -> str:
     """
-    组件2: 让用户选择 PDF 解析方式 (basic, docling, mistral_ocr).
-    :return: 用户选定的解析方式
+    Component 2: Allows the user to select a PDF parsing method.
+    Currently supports:
+      - mistral_ocr_url: Parse using Mistral OCR via URL
+      - docling_url: Parse using Docling via URL
+      - jina_bytes: Parse using Jina (requires downloading PDF bytes)
     """
-    parser_type = st.selectbox("选择解析器", ["basic", "docling", "mistral_ocr"])
+    parser_type = st.selectbox("Select a parser", ["mistral_ocr_url", "docling_url", "jina_bytes"])
     return parser_type
-
 
 def chunking_selector() -> str:
     """
-    组件3: 让用户选择 chunking 策略 (fixed, paragraph, sentence).
-    :return: 选定的策略
+    Component 3: Allows the user to select a chunking strategy (fixed, paragraph, sentence).
     """
-    chunk_strategy = st.selectbox("选择 Chunking 策略", ["fixed", "paragraph", "sentence"])
+    chunk_strategy = st.selectbox("Select a chunking strategy", ["fixed", "paragraph", "sentence"])
     return chunk_strategy
 
-
-def parse_and_chunk_button(base_url: str, pdf_key: str, parser_type: str, chunk_strategy: str):
+def parse_and_chunk_button(base_url: str, quarter: str, parser_type: str, chunk_strategy: str):
     """
-    组件4: 当用户点击按钮时, 调用后端的 parse-and-chunk 接口
-    并将返回的 chunks 存储到 session_state.
+    Component 4: When the user clicks the button, call the backend /parse-and-chunk endpoint,
+    passing the selected year-quarter, parser type, and chunking strategy,
+    and store the returned chunks in the session_state.
     """
-    if st.button("解析并切分"):
-        if not pdf_key:
-            st.warning("请先选择PDF")
+    if st.button("Parse and Chunk"):
+        if not quarter:
+            st.warning("Please select a year-quarter first")
             return
-        with st.spinner("正在解析并切分..."):
+        with st.spinner("Parsing and chunking..."):
             try:
                 parse_resp = requests.get(
                     f"{base_url}/parse-and-chunk",
                     params={
-                        "pdf_key": pdf_key,
+                        "quarter": quarter,
                         "parser_type": parser_type,
                         "chunk_strategy": chunk_strategy,
                     }
@@ -65,66 +67,55 @@ def parse_and_chunk_button(base_url: str, pdf_key: str, parser_type: str, chunk_
                 data = parse_resp.json()
                 st.session_state["chunks"] = data["chunks"]
                 st.session_state["chunks_count"] = data["chunks_count"]
-                st.success(f"解析成功，获得 {data['chunks_count']} 个文本片段！")
+                st.success(f"Parsing successful, obtained {data['chunks_count']} text chunks!")
             except Exception as e:
-                st.error(f"解析失败: {e}")
-
+                st.error(f"Failed to parse: {e}")
 
 def rag_query_and_answer(base_url: str):
     """
-    组件5: 让用户输入查询, 选择RAG方案, 并可选择是否使用Gemini做最终回答.
-    如果只想看检索片段, 就不选 Gemini; 如果想要 LLM回答, 选 Gemini.
+    Component 5: Allows the user to input a query, choose a RAG retrieval method,
+    and opt to use Gemini to generate the final answer.
     """
     chunks = st.session_state.get("chunks", [])
     if not chunks:
-        st.info("请先执行 解析并切分, 以获取 chunks.")
+        st.info("Please perform parse and chunk first to obtain text chunks.")
         return
 
-    st.subheader("查询与回答")
-    user_query = st.text_input("请输入你的问题:", "")
-    rag_type = st.selectbox("RAG 方法", ["manual", "pinecone", "chromadb"])
-    top_k = st.slider("检索Top K", 1, 5, 3)
+    st.subheader("Query and Answer")
+    user_query = st.text_input("Enter your question:", "")
+    rag_type = st.selectbox("RAG Method", ["manual", "pinecone", "chromadb"])
+    top_k = st.slider("Retrieve Top K", 1, 5, 3)
+    use_gemini = st.checkbox("Use Gemini to generate the final answer")
 
-    # 是否调用Gemini
-    use_gemini = st.checkbox("使用 Gemini 生成最终回答")
-
-    if st.button("查询"):
+    if st.button("Query"):
+        payload = {
+            "user_query": user_query,
+            "chunks": chunks,
+            "rag_type": rag_type,
+            "top_k": top_k
+        }
         if use_gemini:
-            # 调用 /rag-ask-gemini
-            with st.spinner("RAG检索 + Gemini生成中..."):
-                payload = {
-                    "user_query": user_query,
-                    "chunks": chunks,
-                    "rag_type": rag_type,
-                    "top_k": top_k
-                }
+            with st.spinner("RAG Retrieval + Gemini Generation..."):
                 try:
                     resp = requests.post(f"{base_url}/rag-ask-gemini", json=payload)
                     resp.raise_for_status()
                     answer = resp.json().get("answer", "")
-                    st.write("### Gemini 给出的最终回答：")
+                    st.write("### Final answer from Gemini:")
                     st.write(answer)
                 except Exception as e:
-                    st.error(f"调用 /rag-ask-gemini 失败: {e}")
+                    st.error(f"Failed to call /rag-ask-gemini: {e}")
         else:
-            # 不用Gemini，只做 RAG 检索
-            with st.spinner("RAG检索中..."):
-                payload = {
-                    "user_query": user_query,
-                    "chunks": chunks,
-                    "rag_type": rag_type,
-                    "top_k": top_k
-                }
+            with st.spinner("RAG Retrieval..."):
                 try:
                     resp = requests.post(f"{base_url}/rag-query", json=payload)
                     resp.raise_for_status()
                     result_data = resp.json()
                     top_chunks = result_data.get("top_chunks", [])
                     if not top_chunks:
-                        st.warning("未检索到任何相关片段。")
+                        st.warning("No relevant chunks retrieved.")
                     else:
-                        st.write("### RAG检索到的文本片段:")
+                        st.write("### Retrieved text chunks by RAG:")
                         for i, c in enumerate(top_chunks):
-                            st.markdown(f"**结果 {i+1}**:\n```\n{c}\n```")
+                            st.markdown(f"**Result {i+1}**:\n```\n{c}\n```")
                 except Exception as e:
-                    st.error(f"调用 /rag-query 失败: {e}")
+                    st.error(f"Failed to call /rag-query: {e}")

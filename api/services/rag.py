@@ -2,7 +2,8 @@ import os
 import numpy as np
 from typing import List, Dict
 from sentence_transformers import SentenceTransformer
-import pinecone
+from pinecone import Pinecone, ServerlessSpec
+from pinecone.exceptions import NotFoundException
 import chromadb
 import sys
 from .gemini import generate_answer_with_gemini
@@ -52,40 +53,56 @@ def rag_manual(chunks: List[str], user_query: str, top_k: int = 3) -> List[str]:
     return top_chunks
 
 # 2) Pinecone approach
-def rag_pinecone(index_name: str, chunks: List[str], user_query: str, top_k: int = 3) -> List[str]:
-    """
-    将 chunks 上传到 Pinecone (若需要), 再搜索 user_query.
-    - 这里做简单示例，每次都新建 index 并 upsert chunks, 你可以改成离线流程.
-    """
-    # 初始化 pinecone
-    if PINECONE_API_KEY:
-        pinecone.init(api_key=PINECONE_API_KEY, environment=PINECONE_ENV)
-    else:
-        raise ValueError("PINECONE_API_KEY not set.")
-    
-    # 若 index 不存在则创建
-    if index_name not in pinecone.list_indexes():
-        pinecone.create_index(name=index_name, dimension=384)  # depends on your model dimension
-    index = pinecone.Index(index_name)
 
-    # 计算 embedding
+
+def rag_pinecone(index_name: str, chunks: List[str], user_query: str, top_k: int = 3) -> List[str]:
+    # 1) 创建 Pinecone 实例
+    pc = Pinecone(
+        api_key=PINECONE_API_KEY,  # 你自己的 key
+        environment=PINECONE_ENV   # 你自己的 environment, e.g. "us-west-1-gcp" 等
+    )
+
+    # 2) 检查或创建索引
+    existing_indexes = pc.list_indexes().names()  # 返回一个 list
+    if index_name not in existing_indexes:
+        pc.create_index(
+            name=index_name,
+            dimension=384,          # 你的 embedding 维度
+            metric="cosine",        # "euclidean" / "dotproduct" / "cosine"
+            # 如果你要设置多种副本或其他 spec 参数，可用:
+            spec=ServerlessSpec(
+                cloud="aws",
+                region="us-east-1"
+            )
+        )
+
+    # 3) 获取索引对象
+    index = pc.Index(index_name)
+
+    # 4) 对 chunks 做embedding
     chunk_embeddings = compute_embeddings(chunks)
 
-    # 先清空index (仅演示)
-    index.delete(deleteAll=True)
 
-    # upsert
-    vectors = [(f"id-{i}", chunk_embeddings[i].tolist(), {"text": chunks[i]}) for i in range(len(chunks))]
-    index.upsert(vectors=vectors)
+    # 5) upsert
+    batch_size = 1000  # Pinecone单次请求最大限制
+    vectors = [
+        (f"id-{i}", chunk_embeddings[i].tolist(), {"text": chunks[i]})
+        for i in range(len(chunks))
+    ]
+    
+    # 分批次插入
+    for i in range(0, len(vectors), batch_size):
+        batch = vectors[i:i + batch_size]
+        index.upsert(vectors=batch)
 
-    # user_query 向量
+    # 6) 对 user_query 做 embedding
     query_emb = compute_embeddings([user_query])[0].tolist()
 
-    # query pinecone
+    # 7) 查询
     result = index.query(vector=query_emb, top_k=top_k, include_metadata=True)
-    # 返回最相关 chunks
     top_chunks = [m["metadata"]["text"] for m in result.matches]
     return top_chunks
+
 
 # 3) ChromaDB approach
 def rag_chromadb(collection_name: str, chunks: List[str], user_query: str, top_k: int = 3) -> List[str]:
@@ -135,7 +152,7 @@ def rag_retrieval(chunks: List[str], user_query: str, rag_type: str = "manual", 
         return rag_manual(chunks, user_query, top_k=top_k)
     elif rag_type == "pinecone":
         # 你需要给一个 Pinecone index name
-        return rag_pinecone("my_pinecone_index", chunks, user_query, top_k=top_k)
+        return rag_pinecone("my-pinecone-index", chunks, user_query, top_k=top_k)
     elif rag_type == "chromadb":
         # 指定 collection name
         return rag_chromadb("my_chroma_collection", chunks, user_query, top_k=top_k)

@@ -1,0 +1,15 @@
+boto3
+chromadb
+docling
+fastapi
+mistralai
+numpy
+pandas
+pinecone
+protobuf
+pydantic
+python-dotenv
+Requests
+sentence_transformers
+uvicorn
+google-genai
