@@ -325,3 +325,4 @@ secrets/
 backend/cost_logs/
 
 airflow/data/
+airflow/dags/plugins
