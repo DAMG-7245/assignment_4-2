@@ -1,4 +1,5 @@
 Access the services:
+   - Codelab: https://damg-7245.github.io/assignment_4-2/
    - Airflow: http://localhost:8080 (username: airflow, password: airflow)
    - Streamlit UI: https://streamlit-frontend-service-1077531201115.us-east1.run.app
    - FastAPI: https://python-backend-service-1077531201115.us-east1.run.app
