@@ -1,0 +1,208 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>RAG Pipeline with Airflow for NVIDIA Quarterly Reports</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14" ga4id=""></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  codelab-ga4id=""
+                  id="docs"
+                  title="RAG Pipeline with Airflow for NVIDIA Quarterly Reports"
+                  environment="web"
+                  feedback-link="">
+    
+      <google-codelab-step label="Introduction" duration="0">
+        <p>This codelab walks you through building a <strong>Retrieval-Augmented Generation (RAG) pipeline</strong> for processing and querying NVIDIA quarterly reports. The project uses <strong>Apache Airflow</strong> for orchestration, <strong>Streamlit</strong> for the user interface, and <strong>FastAPI</strong> for backend services. You&#39;ll also integrate vector databases like Pinecone and ChromaDB to optimize retrieval.</p>
+<p>By the end of this codelab, you will:</p>
+<ul>
+<li>Set up the project environment.</li>
+<li>Implement data ingestion and processing pipelines.</li>
+<li>Parse PDFs using multiple strategies.</li>
+<li>Build a RAG system with hybrid search capabilities.</li>
+<li>Deploy the system using Docker.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Step 1: Setup and Installation" duration="0">
+        <h2 is-upgraded><strong>Objective</strong></h2>
+<p>In this step, we will set up the environment and prepare the necessary tools to start building the RAG pipeline.</p>
+<h2 is-upgraded><strong>Prerequisites</strong></h2>
+<p>Before proceeding, ensure you have the following installed on your system:</p>
+<ul>
+<li><strong>Docker</strong>: For containerizing services.</li>
+<li><strong>Docker Compose</strong>: To manage multi-container setups.</li>
+<li><strong>Python 3.9+</strong>: Required for running scripts and services.</li>
+<li><strong>Git</strong>: To clone the repository.</li>
+<li><strong>Mistral AI API Key</strong>: For OCR-based text extraction.</li>
+<li><strong>Pinecone API Key</strong>: For vector database integration.</li>
+</ul>
+<h2 is-upgraded><strong>Environment Variables</strong></h2>
+<p>Create a <code>.env</code> file in the project root directory with the following variables: MISTRAL_API_KEY=your_mistral_api_key PINECONE_API_KEY=your_pinecone_api_key PINECONE_ENVIRONMENT=your_pinecone_environment PINECONE_INDEX=nvidia-reports</p>
+<p>text</p>
+<h2 is-upgraded><strong>Setting Up the Project</strong></h2>
+<ol type="1">
+<li>Clone the repository: git clone https://github.com/yourusername/rag-pipeline.git cd rag-pipeline</li>
+</ol>
+<p>text</p>
+<ol type="1" start="2">
+<li>Install Python dependencies: pip install -r requirements.txt</li>
+</ol>
+<p>text</p>
+<ol type="1" start="3">
+<li>Verify that Docker is installed: docker –version docker-compose –version</li>
+</ol>
+<p>text</p>
+<ol type="1" start="4">
+<li>Ensure that your <code>.env</code> file is correctly configured.</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Step 2: Data Ingestion Pipeline" duration="0">
+        <h2 is-upgraded>Overview</h2>
+<p>The first step in building the RAG pipeline is ingesting NVIDIA&#39;s quarterly reports. This involves:</p>
+<ol type="1">
+<li>Downloading PDF files from NVIDIA&#39;s investor relations website.</li>
+<li>Storing them in a designated folder for further processing.</li>
+</ol>
+<h2 is-upgraded>Airflow DAG for Data Ingestion</h2>
+<p>The data ingestion process is orchestrated using an Airflow DAG. Below is a placeholder for defining the DAG:</p>
+<p>Placeholder: Define Airflow DAG for data ingestion Explaination:</p>
+<ul>
+<li>This DAG downloads NVIDIA quarterly reports from a specified URL.</li>
+<li>It stores them in a &#34;raw&#34; folder within the data/ directory. text</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Step 3: Parsing PDFs" duration="0">
+        <h2 is-upgraded>Overview</h2>
+<p>After downloading the reports, parse them to extract meaningful text. This step implements three parsing strategies:</p>
+<ol type="1">
+<li>Basic extraction using libraries like PyMuPDF.</li>
+<li>Advanced parsing with Docling.</li>
+<li>OCR-based parsing using Mistral OCR.</li>
+</ol>
+<h2 is-upgraded>Parsing Strategies Implementation</h2>
+<p>Below is a placeholder for implementing PDF parsing strategies:</p>
+<p>Placeholder: Implement PDF parsing strategies Explaination:</p>
+<ul>
+<li>Basic extraction uses PyMuPDF to extract raw text from PDFs.</li>
+<li>Docling provides advanced parsing capabilities for structured data extraction.</li>
+<li>Mistral OCR handles scanned PDFs or complex layouts effectively. text</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Step 4: Chunking and Embedding Generation" duration="0">
+        <h2 is-upgraded>Overview</h2>
+<p>Once text is extracted, split it into smaller chunks to optimize retrieval. This step covers:</p>
+<ol type="1">
+<li>Fixed-size chunking.</li>
+<li>Paragraph-based chunking.</li>
+<li>Semantic chunking.</li>
+</ol>
+<p>Generate vector embeddings for each chunk using models like Hugging Face Transformers.</p>
+<h2 is-upgraded>Chunking Implementation</h2>
+<p>Below is a placeholder for chunking strategies:</p>
+<p>Placeholder: Implement chunking strategies Explaination:</p>
+<ul>
+<li>Fixed-size chunks split text into predefined lengths (e.g., 500 words).</li>
+<li>Paragraph-based chunks split text based on natural paragraph boundaries.</li>
+<li>Semantic chunks split text based on meaning or context relevance. Placeholder: Generate embeddings using Hugging Face Transformers Explaination:</li>
+<li>Use pre-trained models like BERT or Sentence Transformers to generate embeddings. text</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Step 5: Building the RAG Pipeline" duration="0">
+        <h2 is-upgraded>Overview</h2>
+<p>The RAG pipeline retrieves relevant document chunks based on user queries and generates responses using an LLM. This step involves:</p>
+<ol type="1">
+<li>Implementing manual cosine similarity-based retrieval.</li>
+<li>Integrating Pinecone and ChromaDB for advanced retrieval.</li>
+<li>Combining semantic filtering with metadata filtering (hybrid search).</li>
+</ol>
+<h2 is-upgraded>RAG Pipeline Implementation</h2>
+<p>Below is a placeholder for RAG pipeline implementation:</p>
+<p>Placeholder: Implement naive RAG system with cosine similarity Explaination:</p>
+<ul>
+<li>Compute embeddings manually and calculate cosine similarity between query and document chunks. Placeholder: Integrate Pinecone and ChromaDB Explaination:</li>
+<li>Store embeddings in vector databases for efficient retrieval at scale. Placeholder: Implement hybrid search Explaination:</li>
+<li>Combine semantic similarity with metadata filtering (e.g., by quarter/year). text</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Step 6: User Interface with Streamlit" duration="0">
+        <h2 is-upgraded>Overview</h2>
+<p>The Streamlit application allows users to interact with the system by uploading PDFs, selecting parsers, chunking strategies, and querying specific quarters&#39; data.</p>
+<h2 is-upgraded>Streamlit Application Implementation</h2>
+<p>Below is a placeholder for Streamlit application code:</p>
+<p>Placeholder: Build Streamlit application Explaination:</p>
+<ul>
+<li>The app provides an intuitive UI where users can upload PDFs, select options, and view query results. text</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Step 7: Deployment" duration="0">
+        <h2 is-upgraded>Overview</h2>
+<p>Deploy all components using Docker containers. This includes:</p>
+<ol type="1">
+<li>Airflow pipeline container.</li>
+<li>Streamlit + FastAPI container.</li>
+</ol>
+<h2 is-upgraded>Docker Deployment Configuration</h2>
+<p>Below is a placeholder for Docker deployment configuration:</p>
+<p>Placeholder: docker-compose.yml configuration Explaination:</p>
+<ul>
+<li>Defines services for Airflow, Streamlit, and FastAPI.</li>
+<li>Ensures all components run seamlessly in isolated containers. text</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Conclusion" duration="0">
+        <p>Congratulations! You have successfully built a RAG pipeline for processing NVIDIA quarterly reports using Apache Airflow, Streamlit, FastAPI, and vector databases like Pinecone/ChromaDB.</p>
+<p>Feel free to extend this project by adding new features or optimizing existing ones!</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
