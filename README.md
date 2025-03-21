@@ -89,8 +89,8 @@ docker-compose up -d
 
 3. Access the services:
    - Airflow: http://localhost:8080 (username: admin, password: admin)
-   - Streamlit UI: http://localhost:8501
-   - FastAPI: http://localhost:8000/docs
+   - Streamlit UI: https://streamlit-frontend-service-1077531201115.us-east1.run.app
+   - FastAPI: https://python-backend-service-1077531201115.us-east1.run.app
 
 ## Usage
 
