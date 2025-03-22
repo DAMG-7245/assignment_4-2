@@ -84,8 +84,8 @@ PINECONE_INDEX=nvidia-reports
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/rag-pipeline.git
-cd rag-pipeline
+git clone git@github.com:DAMG-7245/assignment_4-2.git
+cd airflow
 ```
 
 2. Start the services:
@@ -99,24 +99,21 @@ docker-compose up -d
 
 ### Data Ingestion
 1. Access the Airflow UI
-2. Trigger the `data_ingestion_dag` to download NVIDIA quarterly reports
-3. Run the `pdf_parsing_dag` to parse the PDFs
-4. Execute the `rag_indexing_dag` to create embeddings and store them
+2. Trigger the `data_ingestion_dag` to get required NVIDIA quarterly reports urls and save them in an excel uploaded to S3
+
 
 ### Querying
 1. Open the Streamlit UI
 2. Select your preferred options:
+   - Specific quarters
    - Parser type
    - RAG method
    - Chunking strategy
-   - Specific quarters (optional)
+    
 3. Enter your query
 4. View the generated response and supporting context
 
-### Uploading New PDFs
-1. Go to the "Upload PDF" tab in the Streamlit UI
-2. Select the PDF file, parser, chunking strategy, and quarter
-3. Upload and process the document
+
 
 ## Project Structure
 
@@ -125,7 +122,7 @@ rag-pipeline/
 ├── airflow/
 │   ├── dags/               # Airflow DAGs for orchestration
 │   ├── plugins/            # Custom operators and hooks
-│   └── Dockerfile          # Airflow service container
+│   └── docker-compose.yml  # Airflow service container
 ├── api/
 │   ├── main.py             # FastAPI application
 │   ├── routes/             # API endpoints
@@ -133,13 +130,9 @@ rag-pipeline/
 │   └── Dockerfile          # API service container
 ├── ui/
 │   ├── app.py              # Streamlit application
-│   ├── pages/              # UI pages
+│   ├── components.py              # UI pages
 │   └── Dockerfile          # UI service container
-├── common/
-│   ├── config.py           # Shared configuration
-│   ├── models.py           # Shared data models
-│   └── utils.py            # Utility functions
-├── docker-compose.yml      # Docker services configuration
+├── docs
 └── README.md               # Project documentation
 ```
 
