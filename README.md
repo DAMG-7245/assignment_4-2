@@ -12,7 +12,7 @@ A Retrieval-Augmented Generation (RAG) pipeline for processing and querying NVID
 
 This project implements a comprehensive RAG system that allows users to:
 - Ingest and process PDF documents (NVIDIA quarterly reports)
-- Parse PDFs using multiple strategies (basic, Docling, Mistral OCR)
+- Parse PDFs using multiple strategies (jina, Docling, Mistral OCR)
 - Generate text chunks using different chunking strategies
 - Create vector embeddings and store them in various databases
 - Query reports with specific filters like quarter/year
@@ -40,12 +40,12 @@ The project consists of two main pipelines:
 - **FastAPI**: Provides the backend API
 - **Streamlit**: User interface for interacting with the system
 - **Vector Databases**: Pinecone and ChromaDB for storing embeddings
-- **LLM Integration**: Uses Mistral AI for generating responses
+- **LLM Integration**: Uses Gemini-2.0-flash for generating responses
 
 ## Features
 
 - **Multiple PDF parsing strategies**:
-  - Basic extraction (PyMuPDF)
+  - Jina
   - Docling-based parsing
   - Mistral OCR for improved extraction
 
