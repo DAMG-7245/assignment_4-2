@@ -20,7 +20,7 @@ This project implements a comprehensive RAG system that allows users to:
 
 ## Architecture
 
-(rag_architecture.png)
+![Alt Text](rag_architecture.png)
 
 The project consists of two main pipelines:
 
