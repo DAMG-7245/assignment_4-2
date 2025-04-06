@@ -1,3 +1,9 @@
+Access the services:
+   - Codelab: https://damg-7245.github.io/assignment_4-2/
+   - Airflow: http://localhost:8080 (username: airflow, password: airflow)
+   - Streamlit UI: https://streamlit-frontend-service-1077531201115.us-east1.run.app
+   - FastAPI: https://python-backend-service-1077531201115.us-east1.run.app
+     
 # RAG Pipeline with Airflow for NVIDIA Quarterly Reports
 
 A Retrieval-Augmented Generation (RAG) pipeline for processing and querying NVIDIA quarterly reports using Apache Airflow for orchestration.
@@ -6,7 +12,7 @@ A Retrieval-Augmented Generation (RAG) pipeline for processing and querying NVID
 
 This project implements a comprehensive RAG system that allows users to:
 - Ingest and process PDF documents (NVIDIA quarterly reports)
-- Parse PDFs using multiple strategies (basic, Docling, Mistral OCR)
+- Parse PDFs using multiple strategies (jina, Docling, Mistral OCR)
 - Generate text chunks using different chunking strategies
 - Create vector embeddings and store them in various databases
 - Query reports with specific filters like quarter/year
@@ -34,12 +40,12 @@ The project consists of two main pipelines:
 - **FastAPI**: Provides the backend API
 - **Streamlit**: User interface for interacting with the system
 - **Vector Databases**: Pinecone and ChromaDB for storing embeddings
-- **LLM Integration**: Uses Mistral AI for generating responses
+- **LLM Integration**: Uses Gemini-2.0-flash for generating responses
 
 ## Features
 
 - **Multiple PDF parsing strategies**:
-  - Basic extraction (PyMuPDF)
+  - Jina
   - Docling-based parsing
   - Mistral OCR for improved extraction
 
@@ -78,8 +84,8 @@ PINECONE_INDEX=nvidia-reports
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/rag-pipeline.git
-cd rag-pipeline
+git clone git@github.com:DAMG-7245/assignment_4-2.git
+cd airflow
 ```
 
 2. Start the services:
@@ -87,33 +93,27 @@ cd rag-pipeline
 docker-compose up -d
 ```
 
-3. Access the services:
-   - Airflow: http://localhost:8080 (username: admin, password: admin)
-   - Streamlit UI: http://localhost:8501
-   - FastAPI: http://localhost:8000/docs
+
 
 ## Usage
 
 ### Data Ingestion
 1. Access the Airflow UI
-2. Trigger the `data_ingestion_dag` to download NVIDIA quarterly reports
-3. Run the `pdf_parsing_dag` to parse the PDFs
-4. Execute the `rag_indexing_dag` to create embeddings and store them
+2. Trigger the `data_ingestion_dag` to get required NVIDIA quarterly reports urls and save them in an excel uploaded to S3
+
 
 ### Querying
 1. Open the Streamlit UI
 2. Select your preferred options:
+   - Specific quarters
    - Parser type
    - RAG method
    - Chunking strategy
-   - Specific quarters (optional)
+    
 3. Enter your query
 4. View the generated response and supporting context
 
-### Uploading New PDFs
-1. Go to the "Upload PDF" tab in the Streamlit UI
-2. Select the PDF file, parser, chunking strategy, and quarter
-3. Upload and process the document
+
 
 ## Project Structure
 
@@ -122,7 +122,7 @@ rag-pipeline/
 ├── airflow/
 │   ├── dags/               # Airflow DAGs for orchestration
 │   ├── plugins/            # Custom operators and hooks
-│   └── Dockerfile          # Airflow service container
+│   └── docker-compose.yml  # Airflow service container
 ├── api/
 │   ├── main.py             # FastAPI application
 │   ├── routes/             # API endpoints
@@ -130,13 +130,9 @@ rag-pipeline/
 │   └── Dockerfile          # API service container
 ├── ui/
 │   ├── app.py              # Streamlit application
-│   ├── pages/              # UI pages
+│   ├── components.py              # UI pages
 │   └── Dockerfile          # UI service container
-├── common/
-│   ├── config.py           # Shared configuration
-│   ├── models.py           # Shared data models
-│   └── utils.py            # Utility functions
-├── docker-compose.yml      # Docker services configuration
+├── docs
 └── README.md               # Project documentation
 ```
 

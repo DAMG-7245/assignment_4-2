@@ -1,20 +1,9 @@
-FROM python:3.10-slim
+FROM python:3.12
 
 WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements first for better caching
-COPY api/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY api/ .
-COPY common/ ./common/
+COPY . .
 
 # Expose API port
 EXPOSE 8000
