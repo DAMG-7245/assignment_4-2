@@ -117,7 +117,7 @@ with DAG(
     dag_id='nvidia_10k_10q_extraction_and_upload',
     default_args=default_args,
     description='Extract NVIDIA 10-K and 10-Q links and upload them to S3',
-    schedule_interval=timedelta(days=7),
+    schedule = timedelta(days=7),
     start_date=datetime(2025, 3, 1),
     catchup=False,
 ) as dag:
