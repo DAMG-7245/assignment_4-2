@@ -13,3 +13,6 @@ Requests
 sentence_transformers
 uvicorn
 google-genai
+selenium
+webdriver_manager
+openpyxl

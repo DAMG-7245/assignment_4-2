@@ -55,10 +55,10 @@ text
 
 ### **Setting Up the Project**
 1. Clone the repository:
-git clone https://github.com/yourusername/rag-pipeline.git
-cd rag-pipeline
+git clone https://github.com/DAMG-7245/assignment_4-2.git
 
-text
+
+
 
 2. Install Python dependencies:
 pip install -r requirements.txt
@@ -73,6 +73,12 @@ text
 
 4. Ensure that your `.env` file is correctly configured.
 
+S3_BUCKET_NAME=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+PINECONE_API_KEY = 
+PINECONE_ENVIRONMENT = 
 
 ---
 
