@@ -55,10 +55,10 @@ text
 
 ### **Setting Up the Project**
 1. Clone the repository:
-git clone https://github.com/yourusername/rag-pipeline.git
-cd rag-pipeline
+git clone https://github.com/DAMG-7245/assignment_4-2.git
 
-text
+
+
 
 2. Install Python dependencies:
 pip install -r requirements.txt
