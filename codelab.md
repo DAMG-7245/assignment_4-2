@@ -73,12 +73,6 @@ text
 
 4. Ensure that your `.env` file is correctly configured.
 
-S3_BUCKET_NAME=
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_REGION=
-PINECONE_API_KEY = 
-PINECONE_ENVIRONMENT = 
 
 ---
 
